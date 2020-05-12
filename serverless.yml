@@ -25,7 +25,13 @@ functions:
           path: /
           method: get
     environment:
-      restaurants_api: https://#{ApiGatewayRestApi}.execute-api.#{AWS::Region}.amazonaws.com/${self:provider.stage}/restaurants
+      restaurants_api:
+        Fn::Join:
+          - ""
+          - - https://
+            - !Ref ApiGatewayRestApi
+            - .execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}/restaurants
+
       cognito_user_pool_id: !Ref CognitoUserPool
       cognito_client_id: !Ref WebCognitoUserPoolClient
 
@@ -37,6 +43,7 @@ functions:
           method: get
           authorizer: aws_iam
     environment:
+      
       restaurants_table: !Ref RestaurantsTable   
 
   search-restaurants:
