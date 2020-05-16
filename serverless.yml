@@ -8,6 +8,13 @@ provider:
   name: aws
   runtime: nodejs12.x
   region: eu-west-1
+  environment:
+    rootUrl:
+      Fn::Join:
+        - ""
+        - - https://
+          - !Ref ApiGatewayRestApi
+          - .execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}
 
   iamRoleStatements:
     - Effect: Allow
@@ -34,6 +41,7 @@ functions:
 
       cognito_user_pool_id: !Ref CognitoUserPool
       cognito_client_id: !Ref WebCognitoUserPoolClient
+      cognito_server_client_id: !Ref ServerCognitoUserPoolClient
 
   get-restaurants:
     handler: functions/get-restaurants.handler
