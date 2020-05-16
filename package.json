@@ -6,7 +6,8 @@
   "scripts": {
     "sls": "serverless",
     "dotEnv": "sls export-env",
-    "test": "npm run dotEnv && cross-env TEST_MODE=handler jest"
+    "test": "npm run dotEnv && cross-env TEST_MODE=handler jest",
+    "acceptance": "npm run dotEnv && cross-env TEST_MODE=http jest"
   },
   "keywords": [],
   "author": "",
@@ -27,6 +28,7 @@
     "aws4": "^1.9.1",
     "axios": "^0.19.2",
     "chai": "^4.2.0",
+    "chance": "^1.1.5",
     "lodash": "^4.17.15",
     "mustache": "^4.0.1"
   }
