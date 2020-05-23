@@ -1,3 +1,4 @@
+const { promisify } = require('util')
 const APP_ROOT = '../../'
 const mode = process.env.TEST_MODE
 const _ = require('lodash')
@@ -7,7 +8,7 @@ const http = require('axios')
 
 
 const viaHandler = async (event, functionName) => {
-  const handler = require(`${APP_ROOT}/functions/${functionName}`).handler
+  const handler = promisify(require(`${APP_ROOT}/functions/${functionName}`).handler)
 
   const context = {}
   const response = await handler(event, context)

@@ -1,3 +1,4 @@
+const middy = require('middy')
 const fs = require("fs")
 const Mustache = require('mustache')
 const http = require('axios')
@@ -29,7 +30,7 @@ const getRestaurants = async () => {
   return (await httpReq).data
 }
 
-module.exports.handler = async (event, context) => {
+module.exports.handler = middy(async (event, context) => {
   const restaurants = await getRestaurants()
   console.log(`found ${restaurants.length} restaurants`)  
   const dayOfWeek = days[new Date().getDay()]
@@ -51,4 +52,4 @@ module.exports.handler = async (event, context) => {
   }
 
   return response
-}
+})
