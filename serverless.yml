@@ -3,6 +3,10 @@ service: workshop-${self:custom.name}
 custom:
   name: 'cjjohansen'
   email: 'cj@strategicboundaries.com'
+  stage: ${opt:stage, self:provider.stage}
+  logLevel:
+    prod: INFO
+    default: DEBUG
 
 provider:
   name: aws
@@ -10,13 +14,14 @@ provider:
   region: eu-west-1
   environment:
     serviceName: ${self:service}
-    stage: ${self:provider.stage}
+    stage: ${self:custom.stage}
+    LOG_LEVEL: ${self:custom.logLevel.${self:custom.stage}, self:custom.logLevel.default}
     rootUrl:
       Fn::Join:
         - ""
         - - https://
           - !Ref ApiGatewayRestApi
-          - .execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}
+          - .execute-api.${self:provider.region}.amazonaws.com/${self:custom.stage}
 
 functions:
   get-index:
@@ -28,20 +33,20 @@ functions:
     iamRoleStatements:
       - Effect: Allow
         Action: execute-api:Invoke
-        Resource: arn:aws:execute-api:#{AWS::Region}:#{AWS::AccountId}:#{ApiGatewayRestApi}/${self:provider.stage}/GET/restaurants          
+        Resource: arn:aws:execute-api:#{AWS::Region}:#{AWS::AccountId}:#{ApiGatewayRestApi}/${self:custom.stage}/GET/restaurants          
     environment:
       restaurants_api:
         Fn::Join:
           - ""
           - - https://
             - !Ref ApiGatewayRestApi
-            - .execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}/restaurants
+            - .execute-api.${self:provider.region}.amazonaws.com/${self:custom.stage}/restaurants
       orders_api:
         Fn::Join:
           - ""
           - - https://
             - !Ref ApiGatewayRestApi
-            - .execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}/orders
+            - .execute-api.${self:provider.region}.amazonaws.com/${self:custom.stage}/orders
 
       cognito_user_pool_id: !Ref CognitoUserPool
       cognito_client_id: !Ref WebCognitoUserPoolClient
@@ -61,7 +66,7 @@ functions:
         Resource: !GetAtt RestaurantsTable.Arn
       - Effect: Allow
         Action: ssm:GetParameters*
-        Resource: arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/${self:service}/${self:provider.stage}/get-restaurants/config          
+        Resource: arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/${self:service}/${self:custom.stage}/get-restaurants/config          
     environment:
       
       restaurants_table: !Ref RestaurantsTable   
@@ -81,8 +86,8 @@ functions:
       - Effect: Allow
         Action: ssm:GetParameters*
         Resource:
-          - arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/${self:service}/${self:provider.stage}/search-restaurants/config
-          - arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/${self:service}/${self:provider.stage}/search-restaurants/secretString
+          - arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/${self:service}/${self:custom.stage}/search-restaurants/config
+          - arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/${self:service}/${self:custom.stage}/search-restaurants/secretString
       - Effect: Allow
         Action: kms:Decrypt
         Resource: ${ssm:/dev/kmsArn}
@@ -109,7 +114,7 @@ functions:
     handler: functions/notify-restaurant.handler
     events:
       - eventBridge:
-          eventBus: arn:aws:events:#{AWS::Region}:#{AWS::AccountId}:event-bus/order_events_${self:provider.stage}
+          eventBus: arn:aws:events:#{AWS::Region}:#{AWS::AccountId}:event-bus/order_events_${self:custom.stage}
           pattern:
             source:
               - big-mouth
@@ -210,18 +215,18 @@ resources:
       Type: AWS::SSM::Parameter
       Properties:
         Type: String
-        Name: /${self:service}/${self:provider.stage}/serviceUrl
+        Name: /${self:service}/${self:custom.stage}/serviceUrl
         Value:
           Fn::Join:
             - ""
             - - https://
               - !Ref ApiGatewayRestApi
-              - .execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}
+              - .execute-api.${self:provider.region}.amazonaws.com/${self:custom.stage}
 
     EventBus:
       Type: AWS::Events::EventBus
       Properties:
-        Name: order_events_${self:provider.stage}
+        Name: order_events_${self:custom.stage}
 
     RestaurantNotificationTopic:
       Type: AWS::SNS::Topic        

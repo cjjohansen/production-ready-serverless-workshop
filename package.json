@@ -26,6 +26,7 @@
     "serverless-pseudo-parameters": "^2.5.0"
   },
   "dependencies": {
+    "@dazn/lambda-powertools-logger": "^1.23.1",
     "aws4": "^1.9.1",
     "axios": "^0.19.2",
     "chai": "^4.2.0",
